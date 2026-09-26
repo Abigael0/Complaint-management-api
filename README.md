@@ -73,6 +73,10 @@ Authorization: Bearer <token>
 | `HANDLER` | View assigned complaints, update status, resolve complaints, view handler dashboard          |
 | `ADMIN`   | View all complaints, assign or reject pending complaints, view admin dashboard               |
 
+## Error Handling
+
+Controllers and authentication middleware throw `AppError` for expected request failures, such as invalid input, missing records, or insufficient permissions. Their `catch` blocks pass errors to Express with `next(error)`. The centralized error middleware in `middleware/error.middleware.js` formats these errors and handles known Mongoose and JWT errors; unexpected errors receive a generic `500` response.
+
 ## API Routes
 
 All routes are prefixed with the paths shown below. Protected routes require a valid bearer token; role-specific routes also require the listed role.

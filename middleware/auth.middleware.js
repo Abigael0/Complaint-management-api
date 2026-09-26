@@ -1,15 +1,14 @@
 const jwt = require("jsonwebtoken");
 
 const User = require("../models/user.model.js");
+const AppError = require("../utils/app-error.js");
 
 const protect = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({
-        message: "Authentication required",
-      });
+      throw new AppError("Authentication required", 401);
     }
 
     const token = authHeader.split(" ")[1];
@@ -19,24 +18,18 @@ const protect = async (req, res, next) => {
     const user = await User.findById(decoded.userId);
 
     if (!user) {
-      return res.status(401).json({
-        message: "User no longer exists",
-      });
+      throw new AppError("User no longer exists", 401);
     }
 
     if (!user.isActive) {
-      return res.status(403).json({
-        message: "Your account has been deactivated",
-      });
+      throw new AppError("Your account has been deactivated", 403);
     }
 
     req.user = user;
 
     next();
   } catch (error) {
-    return res.status(401).json({
-      message: "Invalid or expired token",
-    });
+    return next(error);
   }
 };
 

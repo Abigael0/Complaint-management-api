@@ -1,15 +1,15 @@
+const AppError = require("../utils/app-error.js");
+
 const authorize = (...allowedRoles) => {
   return (req, res, next) => {
     if (!req.user) {
-      return res.status(401).json({
-        message: "Authentication required",
-      });
+      return next(new AppError("Authentication required", 401));
     }
 
     if (!allowedRoles.includes(req.user.role)) {
-      return res.status(403).json({
-        message: "You are not authorized to perform this action",
-      });
+      return next(
+        new AppError("You are not authorized to perform this action", 403),
+      );
     }
 
     next();

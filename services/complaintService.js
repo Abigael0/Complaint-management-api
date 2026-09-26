@@ -7,19 +7,18 @@ const allowedTransitions = {
   CLOSED: [],
 };
 
+const AppError = require("../utils/app-error.js");
+
 const changeComplaintStatus = async (complaint, newStatus, changedBy, note) => {
   const currentStatus = complaint.status;
 
   const allowedNextStatuses = allowedTransitions[currentStatus] || [];
 
   if (!allowedNextStatuses.includes(newStatus)) {
-    const error = new Error(
+    throw new AppError(
       `Cannot change complaint status from ${currentStatus} to ${newStatus}`,
+      400,
     );
-
-    error.statusCode = 400;
-
-    throw error;
   }
 
   complaint.status = newStatus;
