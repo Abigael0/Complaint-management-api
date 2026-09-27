@@ -1,6 +1,6 @@
 const Complaint = require("../models/complaint.model.js");
 
-const getUserDashboard = async (req, res) => {
+const getUserDashboard = async (req, res, next) => {
   try {
     const userId = req.user._id;
 
@@ -96,12 +96,7 @@ const getUserDashboard = async (req, res) => {
       recentComplaints,
     });
   } catch (error) {
-    console.error("Get user dashboard error:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Server error while retrieving dashboard",
-    });
+    return next(error);
   }
 };
 

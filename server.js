@@ -14,9 +14,9 @@ const authRoutes = require("./routes/auth.route.js");
 const complaintRoutes = require("./routes/complaint.route.js");
 const commentRoutes = require("./routes/comment.route.js");
 const adminComplaintRoutes = require("./routes/adminComplaint.route.js");
-const auditLogRoutes = require("./routes/auditLog.route.js");
 const handlerComplaintRoutes = require("./routes/handlerComplaint.route.js");
 const errorHandler = require("./middleware/error.middleware.js");
+const AppError = require("./utils/app-error.js");
 
 dotenv.config();
 
@@ -77,13 +77,9 @@ app.use("/api/auth", authLimiter, authRoutes);
 app.use("/api/complaints", complaintRoutes);
 app.use("/api", commentRoutes);
 app.use("/api/admin", adminComplaintRoutes);
-app.use("/api", auditLogRoutes);
 app.use("/api/handler", handlerComplaintRoutes);
-app.use((req, res) => {
-  return res.status(404).json({
-    success: false,
-    message: `Route ${req.method} ${req.originalUrl} not found`,
-  });
+app.use((req, res, next) => {
+  next(new AppError(`Route ${req.method} ${req.originalUrl} not found`, 404));
 });
 
 app.use(errorHandler);

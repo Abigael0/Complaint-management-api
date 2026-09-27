@@ -21,28 +21,6 @@ const commentSchema = new mongoose.Schema(
       trim: true,
       maxlength: 5000,
     },
-
-    attachments: [
-      {
-        url: {
-          type: String,
-          required: true,
-        },
-
-        publicId: {
-          type: String,
-          required: true,
-        },
-
-        originalName: {
-          type: String,
-        },
-
-        fileType: {
-          type: String,
-        },
-      },
-    ],
   },
   {
     timestamps: true,
