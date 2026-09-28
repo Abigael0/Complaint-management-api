@@ -4,18 +4,36 @@ const User = require("../models/user.model.js");
 const generateToken = require("../utils/generateToken.js");
 const AppError = require("../utils/app-error.js");
 
+const toPublicUser = (user) => {
+  const publicUser = user.toObject();
+  delete publicUser.password;
+  return publicUser;
+};
+
 const register = async (req, res, next) => {
   try {
-    const { firstName, lastName, email, password } = req.body;
+    const { firstName, lastName, userName, email, password } = req.body;
 
-    if (!firstName || !lastName || !email || !password) {
+    if (!firstName || !lastName || !userName || !email || !password) {
       throw new AppError("All fields are required", 400);
     }
 
-    const existingUser = await User.findOne({ email });
+    if (
+      typeof password !== "string" ||
+      password.length < 6 ||
+      password.length > 20
+    ) {
+      throw new AppError("Password must be between 6 and 20 characters", 400);
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedUserName = userName.trim().toLowerCase();
+    const existingUser = await User.findOne({
+      $or: [{ email: normalizedEmail }, { userName: normalizedUserName }],
+    });
 
     if (existingUser) {
-      throw new AppError("User with this email already exists", 409);
+      throw new AppError("User with this email or username already exists", 409);
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -23,7 +41,8 @@ const register = async (req, res, next) => {
     const user = await User.create({
       firstName,
       lastName,
-      email,
+      userName: normalizedUserName,
+      email: normalizedEmail,
       password: hashedPassword,
     });
 
@@ -32,7 +51,7 @@ const register = async (req, res, next) => {
     return res.status(201).json({
       message: "Registration successful",
       token,
-      user,
+      user: toPublicUser(user),
     });
   } catch (error) {
     return next(error);
@@ -41,13 +60,17 @@ const register = async (req, res, next) => {
 
 const login = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
+    const { email, userName, password } = req.body;
+    const loginIdentifier = email || userName;
 
-    if (!email || !password) {
-      throw new AppError("Email and password are required", 400);
+    if (!loginIdentifier || !password) {
+      throw new AppError("Email or username and password are required", 400);
     }
 
-    const user = await User.findOne({ email }).select("+password");
+    const normalizedIdentifier = loginIdentifier.trim().toLowerCase();
+    const user = await User.findOne({
+      $or: [{ email: normalizedIdentifier }, { userName: normalizedIdentifier }],
+    }).select("+password");
 
     if (!user) {
       throw new AppError("User not found, Please Register", 404);
@@ -68,7 +91,7 @@ const login = async (req, res, next) => {
     return res.status(200).json({
       message: "Login successful",
       token,
-      user,
+      user: toPublicUser(user),
     });
   } catch (error) {
     return next(error);
