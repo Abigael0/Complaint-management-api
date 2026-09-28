@@ -18,13 +18,14 @@ A role-based REST API for submitting, assigning, tracking, and resolving custome
 
 ## Setup
 
-1. Install dependencies from the repository root:
+1. From the repository root, install the backend dependencies:
 
    ```bash
+   cd backend
    npm install
    ```
 
-2. Create a `.env` file in the repository root:
+2. Create a `.env` file in the `backend` directory:
 
    ```env
    MONGO_URI=mongodb://127.0.0.1:27017/complaint-portal
@@ -34,7 +35,7 @@ A role-based REST API for submitting, assigning, tracking, and resolving custome
 
    Keep `.env` private. Do not commit database credentials or JWT secrets. The `.gitignore` excludes `.env` and `node_modules/`.
 
-3. Start the API in development mode:
+3. Start the API from the `backend` directory in development mode:
 
    ```bash
    npm run dev
@@ -47,6 +48,10 @@ A role-based REST API for submitting, assigning, tracking, and resolving custome
    ```
 
 The API listens on port `8000` by default. Set `PORT` to use another port. Check that it is running at `http://localhost:8000/api/health`.
+
+Interactive API documentation is available at `http://localhost:8000/api-docs` after the server starts. It describes every route, request body, query/path parameter, authentication requirement, and documented success/error response.
+
+Rate limits are 100 requests per 15 minutes per IP across the API and 10 requests per 15 minutes per IP on authentication routes.
 
 ## Scripts
 
@@ -108,7 +113,9 @@ All routes are prefixed with the paths shown below. Protected routes require a v
 
 Complaint categories are `PAYMENT`, `ACCOUNT`, `TECHNICAL`, `SERVICE`, and `OTHER`. Priorities are `LOW`, `MEDIUM`, `HIGH`, and `URGENT`. Statuses progress through `PENDING`, `ASSIGNED`, `IN_PROGRESS`, `RESOLVED`, and `CLOSED`; pending complaints may also be `REJECTED`.
 
-For the user complaint routes, `:id` is the public complaint ID. The comments controller looks up complaints by MongoDB document ID (`_id`), so the `:id` in comment routes must be that MongoDB ID.
+Registration requires `firstName`, `lastName`, `userName`, `email`, and `password`. Usernames are unique and 2-20 characters; passwords must be 6-20 characters. Login accepts either `email` or `userName` with the password. All protected routes require `Authorization: Bearer <token>`; role-specific routes also require the role listed above. Comment endpoints additionally authorize access to the complaint owner, its assigned handler, or an admin.
+
+For complaint detail/action routes, `:id` is the public complaint ID. Comment routes use the MongoDB complaint document ID (`_id`) instead. See Swagger UI for parameter details and request/response schemas.
 
 ## Project Structure
 

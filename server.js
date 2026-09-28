@@ -3,6 +3,10 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
+const fs = require("node:fs");
+const path = require("node:path");
+const swaggerUi = require("swagger-ui-express");
+const YAML = require("yaml");
 
 const { rateLimit } = require("express-rate-limit");
 
@@ -19,6 +23,10 @@ const errorHandler = require("./middleware/error.middleware.js");
 const AppError = require("./utils/app-error.js");
 
 dotenv.config();
+
+const openApiDocument = YAML.parse(
+  fs.readFileSync(path.join(__dirname, "docs/openapi.yaml"), "utf8"),
+);
 
 const app = express();
 app.use(helmet());
@@ -69,6 +77,8 @@ app.get("/api/health", (req, res) => {
     timestamp: new Date().toISOString(),
   });
 });
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openApiDocument));
 
 app.use("/api/admin/dashboard", adminDashboardRoutes);
 app.use("/api/handler/dashboard", handlerDashboardRoutes);
