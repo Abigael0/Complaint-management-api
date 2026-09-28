@@ -49,7 +49,7 @@ A role-based REST API for submitting, assigning, tracking, and resolving custome
 
 The API listens on port `8000` by default. Set `PORT` to use another port. Check that it is running at `http://localhost:8000/api/health`.
 
-Interactive API documentation is available at `http://localhost:8000/api-docs` after the server starts. It describes every route, request body, query/path parameter, authentication requirement, and documented success/error response.
+After starting the server, [open the interactive Swagger UI](http://localhost:4000/api-docs) to inspect and test every endpoint. This link uses the current `PORT=4000` setting; update the port in the link if your `.env` uses a different value. Select **Try it out** on an operation, enter its parameters or request body, and select **Execute** to send the request. For protected endpoints, use **Authorize** and enter your JWT; Swagger UI adds the `Bearer` prefix.
 
 Rate limits are 100 requests per 15 minutes per IP across the API and 10 requests per 15 minutes per IP on authentication routes.
 
