@@ -35,7 +35,7 @@ app.use(express.json());
 app.use(express.json({ limit: "10kb" }));
 app.use(express.urlencoded({ extended: true, limit: "10kb" }));
 const generalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
+  windowMs: 30 * 60 * 1000,
   limit: 100,
   standardHeaders: "draft-8",
   legacyHeaders: false,
@@ -48,7 +48,7 @@ app.use(morgan("dev"));
 app.use(generalLimiter);
 
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
+  windowMs: 30 * 60 * 1000,
 
   limit: 10,
 

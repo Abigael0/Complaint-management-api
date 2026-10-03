@@ -58,6 +58,82 @@ const register = async (req, res, next) => {
   }
 };
 
+
+
+const registerAdmin = async (req, res, next) => {
+  try {
+    const { name, email, password } = req.body;
+
+    if (!name || !email || !password) {
+      throw new AppError("Name, email and password are required", 400);
+    }
+
+    if (
+      typeof password !== "string" ||
+      password.length < 6 ||
+      password.length > 20
+    ) {
+      throw new AppError(
+        "Password must be between 6 and 20 characters",
+        400
+      );
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const trimmedName = name.trim();
+
+    const nameParts = trimmedName.split(/\s+/);
+
+    const firstName = nameParts[0];
+    const lastName = nameParts.slice(1).join(" ") || firstName;
+
+    // Generate a username from the name
+    const baseUserName = trimmedName
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, "");
+
+    let userName = baseUserName;
+    let counter = 1;
+
+    while (await User.findOne({ userName })) {
+      userName = `${baseUserName}${counter}`;
+      counter++;
+    }
+
+    const existingUser = await User.findOne({
+      email: normalizedEmail,
+    });
+
+    if (existingUser) {
+      throw new AppError("A user with this email already exists", 409);
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await User.create({
+      firstName,
+      lastName,
+      userName,
+      email: normalizedEmail,
+      password: hashedPassword,
+      role: "ADMIN",
+    });
+
+    const token = generateToken(user._id);
+
+    return res.status(201).json({
+      message: "Admin registration successful",
+      token,
+      user: toPublicUser(user),
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+
+
+
 const login = async (req, res, next) => {
   try {
     const { email, userName, password } = req.body;
@@ -100,5 +176,6 @@ const login = async (req, res, next) => {
 
 module.exports = {
   register,
+  registerAdmin,
   login,
 };
